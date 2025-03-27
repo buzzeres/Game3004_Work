@@ -18,6 +18,9 @@ public class PlayerBehaviour : MonoBehaviour
     public LayerMask groundMask;
     public bool isGrounded;
 
+    [Header("Digging Properties")]
+    public float digRange = 2.0f;
+    public LayerMask digMask;
 
     // Start is called before the first frame update
     void Start()
@@ -49,6 +52,29 @@ public class PlayerBehaviour : MonoBehaviour
         velocity.y += gravity * Time.deltaTime;
 
         controller.Move(velocity * Time.deltaTime);
+
+        if (Input.GetMouseButtonDown(0))
+        {
+            Dig();
+        }
+    }
+
+    void Dig()
+    {
+        RaycastHit hit;
+        if (Physics.Raycast(transform.position, transform.forward, out hit, digRange, digMask))
+        {
+            GameObject hitTile = hit.collider.gameObject;
+            Destroy(hitTile);
+
+            Vector3 belowPosition = hitTile.transform.position - Vector3.up;
+            Collider[] colliders = Physics.OverlapSphere(belowPosition, 0.1f, digMask);
+            foreach (var collider in colliders)
+            {
+                collider.enabled = true;
+                collider.GetComponent<MeshRenderer>().enabled = true;
+            }
+        }
     }
 
     void OnDrawGizmos()
